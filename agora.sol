@@ -1,5 +1,4 @@
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-//interface erc20 + eth contract address for purchase
 /*
 Only getting the essentials
 */
@@ -10,11 +9,6 @@ interface IERC721{
     function tokenURI(uint256 tokenId)external view returns(string memory);
 }
 contract agora{
-    //list nfts function
-        //to list the latest one first
-    //input function
-    //create allowance function
-    //clean up periodically (if getApproved no longer is us=remove + sold)
     struct List{
         address contractAddr;
         uint tokenId;
@@ -52,8 +46,15 @@ contract agora{
         Sold++;
         delete list[_id];
     }}
-    
-    function Show(uint batch)external{
+    /*  Only show the batch number of nfts e.g. 20 per page to prevent overloading
+        Usng while loop to get the batch number and break at 0
+        Skip listing that no longer have allowance to us
+    */
+    function Show(uint batch)external view returns(uint[]memory){
         
+    }
+
+    function Clean()external{
+
     }
 }
