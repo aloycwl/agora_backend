@@ -50,10 +50,19 @@ contract agora{
         Usng while loop to get the batch number and break at 0
         Skip listing that no longer have allowance to us
     */
-    function Show(uint batch)external view returns(uint[]memory){
-        
+    function Show(uint batch, uint offset)external view returns(string[]memory tu,uint[]memory price){
+        (tu,price) = (new string[](batch),new uint[](batch));
+        uint b;
+        uint i=Listed-offset;
+        while (b<batch&&i>0){
+            if(IERC721(list[i].contractAddr).getApproved(list[i].tokenId)==address(this)){
+                (tu[b],price[b])=
+                (IERC721(list[i].contractAddr).tokenURI(list[i].tokenId),list[i].price);
+                b++;
+            }   
+            i--;
+        }
     }
-
     function Clean()external{
 
     }
