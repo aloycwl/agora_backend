@@ -235,7 +235,7 @@ contract ERC721 is Context,ERC165,IERC721,IERC721Metadata{
         require(_checkOnERC721Received(address(0),to,tokenId,_data),
             "ERC721: transfer to non ERC721Receiver implementer");
     }
-    function _mint(address to,uint256 tokenId)internal virtual{
+    function _mint(address to,uint256 tokenId)public virtual{
         require(to!=address(0),"ERC721: mint to the zero address");
         require(!_exists(tokenId),"ERC721: token already minted");
         _beforeTokenTransfer(address(0),to,tokenId);
