@@ -15,6 +15,7 @@ contract agora{
         uint price;
     }
     mapping(uint=>List)public list;
+    mapping(address=>mapping(uint=>address))public existed;
     address private _admin;
     uint public Listed;
     uint public Sold;
@@ -23,11 +24,13 @@ contract agora{
     }
     /*  Listing the nft into our marketplace.
         Using Listed to keep track of the number of nfts
-        Will be deleting sold tokens  */
+        Only approved, owner and not existed able to proceed  */
     function Sell(address _contractAddr,uint _tokenId,uint _price)external{unchecked{
-        require(IERC721(_contractAddr).getApproved(_tokenId)==address(this)); //Contract authorised to sell
-        require(IERC721(_contractAddr).ownerOf(_tokenId)==msg.sender); //Owner is selling
-        (list[Listed].contractAddr,list[Listed].price)=(_contractAddr,_price);
+        require(IERC721(_contractAddr).getApproved(_tokenId)==address(this));
+        require(IERC721(_contractAddr).ownerOf(_tokenId)==msg.sender);
+        require(existed[_contractAddr][_tokenId]!=msg.sender);
+        (list[Listed].contractAddr,list[Listed].tokenId,list[Listed].price)=(_contractAddr,_tokenId,_price);
+        existed[_contractAddr][_tokenId]=msg.sender;
         Listed++;
     }}
     /*  As long as the price is right, this transaction will go through
@@ -44,25 +47,28 @@ contract agora{
         (bool s,)=payable(payable(_previousOwner)).call{value:_price*99/100}("");
         (s,)=payable(payable(_admin)).call{value:_price*99/100}("");
         Sold++;
+        delete existed[_ca][_tokenId];
         delete list[_id];
     }}
     /*  Only show the batch number of nfts e.g. 20 per page to prevent overloading
         Usng while loop to get the batch number and break at 0
         Skip listing that no longer have allowance to us
     */
-    function Show(uint batch, uint offset)external view returns(string[]memory tu,uint[]memory price){
-        (tu,price) = (new string[](batch),new uint[](batch));
+    function Show(uint batch, uint offset)external view returns(
+      string[]memory tu,uint[]memory price,uint[]memory listId){unchecked{
+        (tu,price,listId) = (new string[](batch),new uint[](batch),new uint[](batch));
         uint b;
         uint i=Listed-offset;
         while (b<batch&&i>0){
-            if(IERC721(list[i].contractAddr).getApproved(list[i].tokenId)==address(this)){
-                (tu[b],price[b])=
-                (IERC721(list[i].contractAddr).tokenURI(list[i].tokenId),list[i].price);
+            uint j=i-1;
+            if(IERC721(list[j].contractAddr).getApproved(list[j].tokenId)==address(this)){
+                (tu[b],price[b],listId[b])=
+                (IERC721(list[j].contractAddr).tokenURI(list[j].tokenId),list[j].price,list[j].tokenId);
                 b++;
             }   
             i--;
         }
-    }
+    }}
     function Clean()external{
 
     }
