@@ -65,11 +65,8 @@ contract agora{
                 (tu[b],price[b],listId[b])=
                 (IERC721(list[j].contractAddr).tokenURI(list[j].tokenId),list[j].price,list[j].tokenId);
                 b++;
-            }   
+            }
             i--;
         }
     }}
-    function Clean()external{
-
-    }
 }
