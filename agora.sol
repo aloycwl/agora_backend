@@ -63,7 +63,7 @@ contract agora{
             uint j=i-1;
             if(IERC721(list[j].contractAddr).getApproved(list[j].tokenId)==address(this)){
                 (tu[b],price[b],listId[b])=
-                (IERC721(list[j].contractAddr).tokenURI(list[j].tokenId),list[j].price,list[j].tokenId);
+                (IERC721(list[j].contractAddr).tokenURI(list[j].tokenId),list[j].price,i);
                 b++;
             }
             i--;
