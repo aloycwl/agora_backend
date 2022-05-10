@@ -45,7 +45,7 @@ contract agora{
         IERC721(_ca).transferFrom(_previousOwner,address(this),_tokenId);
         IERC721(_ca).transferFrom(address(this),msg.sender,_tokenId);
         (bool s,)=payable(payable(_previousOwner)).call{value:_price*99/100}("");
-        (s,)=payable(payable(_admin)).call{value:_price*99/100}("");
+        (s,)=payable(payable(_admin)).call{value:_price*1/100}("");
         Sold++;
         delete existed[_ca][_tokenId];
         delete list[_id];
