@@ -1,7 +1,4 @@
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-/*
-Only getting the essentials
-*/
 interface IERC721{
     function ownerOf(uint256 tokenId)external view returns(address owner);
     function getApproved(uint256 tokenId)external view returns(address operator);
@@ -22,10 +19,11 @@ contract agora{
     constructor(){
         _admin=msg.sender;
     }
+    function Sell(address _contractAddr,uint _tokenId,uint _price)external{unchecked{
     /*  Listing the nft into our marketplace.
         Using Listed to keep track of the number of nfts
-        Only approved, owner and not existed able to proceed  */
-    function Sell(address _contractAddr,uint _tokenId,uint _price)external{unchecked{
+        Only approved, owner and not existed able to proceed 
+    */
         require(IERC721(_contractAddr).getApproved(_tokenId)==address(this));
         require(IERC721(_contractAddr).ownerOf(_tokenId)==msg.sender);
         require(existed[_contractAddr][_tokenId]!=msg.sender);
@@ -33,11 +31,11 @@ contract agora{
         existed[_contractAddr][_tokenId]=msg.sender;
         Listed++;
     }}
+    function Buy(uint _id)external payable{unchecked{
     /*  As long as the price is right, this transaction will go through
         Have to transfer to contract first before executing another transfer out
         Pay previous owner and 1% to admin
     */
-    function Buy(uint _id)external payable{unchecked{
         (uint _tokenId,uint _price)=(list[_id].tokenId,list[_id].price);
         require(msg.value>=_price);
         address _ca=list[_id].contractAddr;
@@ -50,11 +48,11 @@ contract agora{
         delete existed[_ca][_tokenId];
         delete list[_id];
     }}
+    function Show(uint batch, uint offset)external view returns(
     /*  Only show the batch number of nfts e.g. 20 per page to prevent overloading
         Usng while loop to get the batch number and break at 0
         Skip listing that no longer have allowance to us
     */
-    function Show(uint batch, uint offset)external view returns(
       string[]memory tu,uint[]memory price,uint[]memory listId){unchecked{
         (tu,price,listId) = (new string[](batch),new uint[](batch),new uint[](batch));
         uint b;
