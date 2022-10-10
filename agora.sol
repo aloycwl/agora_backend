@@ -7,7 +7,7 @@ interface IERC721{
 }
 contract agora{
     struct List{
-        address contractAddr;
+        address nftAdd;
         uint tokenId;
         uint price;
     }    
@@ -18,44 +18,44 @@ contract agora{
     constructor(){
         _owner=msg.sender;
     }
-    function Sell(address _contractAddr,uint _tokenId,uint _price)external{unchecked{
+    function Sell(address _nftAdd,uint _tokenId,uint _price)external{unchecked{
         /*  Listing the nft into our marketplace.
             Using Listed to keep track of the number of nfts
             Only approved and owner    */
-        require(IERC721(_contractAddr).getApproved(_tokenId)==address(this));
-        require(IERC721(_contractAddr).ownerOf(_tokenId)==msg.sender);
+        require(IERC721(_nftAdd).getApproved(_tokenId)==address(this));
+        require(IERC721(_nftAdd).ownerOf(_tokenId)==msg.sender);
         List storage l=list[Listed];
-        (l.contractAddr,l.tokenId,l.price)=(_contractAddr,_tokenId,_price);
+        (l.nftAdd,l.tokenId,l.price)=(_nftAdd,_tokenId,_price);
         Listed++;
     }}
     function Buy(uint _id)external payable{unchecked{
         /*  As long as the price is right, this transaction will go through
             Have to transfer to contract first before executing another transfer out
             Pay previous owner and 1% to admin  */
-        (uint _tokenId,uint _price)=(list[_id].tokenId,list[_id].price);
+        List storage l=list[_id];
+        uint _price=l.price;
         require(msg.value>=_price);
-        address _ca=list[_id].contractAddr;
-        address _previousOwner=IERC721(_ca).ownerOf(_tokenId);
-        IERC721(_ca).transferFrom(_previousOwner,address(this),_tokenId);
-        IERC721(_ca).transferFrom(address(this),msg.sender,_tokenId);
-        payable(_previousOwner).transfer(_price*99);
-        (Sold++,Listed--);
+        address seller=IERC721(l.nftAdd).ownerOf(l.tokenId);
+        IERC721(l.nftAdd).transferFrom(seller,address(this),l.tokenId);
+        IERC721(l.nftAdd).transferFrom(address(this),msg.sender,l.tokenId);
+        payable(seller).transfer(_price*99);
+        Sold++;
         delete list[_id];
     }}
     function Show(uint batch, uint offset)external view returns
-        (string[]memory tu,uint[]memory price,uint[]memory listId){unchecked{
+    (string[]memory tu,uint[]memory price,uint[]memory listId){unchecked{
         /*  Only show the batch number of nfts e.g. 20 per page to prevent overloading
             Usng while loop to get the batch number and break at 0
             Skip listing that no longer have allowance to us    */
-        (tu,price,listId) = (new string[](batch),new uint[](batch),new uint[](batch));
+        (tu,price,listId)=(new string[](batch),new uint[](batch),new uint[](batch));
         uint b;
         uint i=Listed-offset;
-        while (b<batch&&i>0){
+        while(b<batch&&i>0){
             uint j=i-1;
-            if(IERC721(list[j].contractAddr).getApproved(list[j].tokenId)==address(this)){
-                (tu[b],price[b],listId[b])=
-                (IERC721(list[j].contractAddr).tokenURI(list[j].tokenId),list[j].price,i);
+            List storage l=list[j];
+            if(IERC721(l.nftAdd).getApproved(l.tokenId)==address(this)){
                 b++;
+                (tu[b],price[b],listId[b])=(IERC721(l.nftAdd).tokenURI(l.tokenId),l.price,i);
             }
             i--;
         }
