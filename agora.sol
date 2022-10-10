@@ -51,8 +51,7 @@ contract agora{
         uint b;
         uint i=Listed-offset;
         while(b<batch&&i>0){
-            uint j=i-1;
-            List storage l=list[j];
+            List storage l=list[i-1];
             if(IERC721(l.nftAdd).getApproved(l.tokenId)==address(this)){
                 b++;
                 (tu[b],price[b],listId[b])=(IERC721(l.nftAdd).tokenURI(l.tokenId),l.price,i);
