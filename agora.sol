@@ -1,9 +1,9 @@
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 interface IERC721{
-    function ownerOf(uint256 tokenId)external view returns(address owner);
-    function getApproved(uint256 tokenId)external view returns(address operator);
-    function transferFrom(address from,address to,uint256 tokenId)external;
-    function tokenURI(uint256 tokenId)external view returns(string memory);
+    function ownerOf(uint256)external view returns(address);
+    function getApproved(uint256)external view returns(address);
+    function transferFrom(address,address,uint256)external;
+    function tokenURI(uint256)external view returns(string memory);
 }
 contract agora{
     struct List{
