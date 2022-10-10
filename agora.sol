@@ -13,17 +13,16 @@ contract agora{
     }
     mapping(uint=>List)public list;
     mapping(address=>mapping(uint=>address))public existed;
-    address private _admin;
+    address private _owner;
     uint public Listed;
     uint public Sold;
     constructor(){
-        _admin=msg.sender;
+        _owner=msg.sender;
     }
     function Sell(address _contractAddr,uint _tokenId,uint _price)external{unchecked{
-    /*  Listing the nft into our marketplace.
-        Using Listed to keep track of the number of nfts
-        Only approved, owner and not existed able to proceed 
-    */
+        /*  Listing the nft into our marketplace.
+            Using Listed to keep track of the number of nfts
+            Only approved, owner and not existed able to proceed    */
         require(IERC721(_contractAddr).getApproved(_tokenId)==address(this));
         require(IERC721(_contractAddr).ownerOf(_tokenId)==msg.sender);
         require(existed[_contractAddr][_tokenId]!=msg.sender);
@@ -32,10 +31,9 @@ contract agora{
         Listed++;
     }}
     function Buy(uint _id)external payable{unchecked{
-    /*  As long as the price is right, this transaction will go through
-        Have to transfer to contract first before executing another transfer out
-        Pay previous owner and 1% to admin
-    */
+        /*  As long as the price is right, this transaction will go through
+            Have to transfer to contract first before executing another transfer out
+            Pay previous owner and 1% to admin  */
         (uint _tokenId,uint _price)=(list[_id].tokenId,list[_id].price);
         require(msg.value>=_price);
         address _ca=list[_id].contractAddr;
@@ -43,17 +41,16 @@ contract agora{
         IERC721(_ca).transferFrom(_previousOwner,address(this),_tokenId);
         IERC721(_ca).transferFrom(address(this),msg.sender,_tokenId);
         (bool s,)=payable(payable(_previousOwner)).call{value:_price*99/100}("");
-        (s,)=payable(payable(_admin)).call{value:_price/100}("");
-        Sold++;
+        (s,)=payable(payable(_owner)).call{value:_price/100}("");
+        (Sold++,Listed--);
         delete existed[_ca][_tokenId];
         delete list[_id];
     }}
     function Show(uint batch, uint offset)external view returns(
-    /*  Only show the batch number of nfts e.g. 20 per page to prevent overloading
-        Usng while loop to get the batch number and break at 0
-        Skip listing that no longer have allowance to us
-    */
         string[]memory tu,uint[]memory price,uint[]memory listId){unchecked{
+        /*  Only show the batch number of nfts e.g. 20 per page to prevent overloading
+            Usng while loop to get the batch number and break at 0
+            Skip listing that no longer have allowance to us    */
         (tu,price,listId) = (new string[](batch),new uint[](batch),new uint[](batch));
         uint b;
         uint i=Listed-offset;
