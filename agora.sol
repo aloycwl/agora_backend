@@ -10,24 +10,22 @@ contract agora{
         address contractAddr;
         uint tokenId;
         uint price;
-    }
-    mapping(uint=>List)public list;
-    mapping(address=>mapping(uint=>address))public existed;
-    address private _owner;
+    }    
     uint public Listed;
     uint public Sold;
+    address private _owner;
+    mapping(uint=>List)public list;
     constructor(){
         _owner=msg.sender;
     }
     function Sell(address _contractAddr,uint _tokenId,uint _price)external{unchecked{
         /*  Listing the nft into our marketplace.
             Using Listed to keep track of the number of nfts
-            Only approved, owner and not existed able to proceed    */
+            Only approved and owner    */
         require(IERC721(_contractAddr).getApproved(_tokenId)==address(this));
         require(IERC721(_contractAddr).ownerOf(_tokenId)==msg.sender);
-        require(existed[_contractAddr][_tokenId]!=msg.sender);
-        (list[Listed].contractAddr,list[Listed].tokenId,list[Listed].price)=(_contractAddr,_tokenId,_price);
-        existed[_contractAddr][_tokenId]=msg.sender;
+        List storage l=list[Listed];
+        (l.contractAddr,l.tokenId,l.price)=(_contractAddr,_tokenId,_price);
         Listed++;
     }}
     function Buy(uint _id)external payable{unchecked{
@@ -40,14 +38,12 @@ contract agora{
         address _previousOwner=IERC721(_ca).ownerOf(_tokenId);
         IERC721(_ca).transferFrom(_previousOwner,address(this),_tokenId);
         IERC721(_ca).transferFrom(address(this),msg.sender,_tokenId);
-        (bool s,)=payable(payable(_previousOwner)).call{value:_price*99/100}("");
-        (s,)=payable(payable(_owner)).call{value:_price/100}("");
+        payable(_previousOwner).transfer(_price*99);
         (Sold++,Listed--);
-        delete existed[_ca][_tokenId];
         delete list[_id];
     }}
-    function Show(uint batch, uint offset)external view returns(
-        string[]memory tu,uint[]memory price,uint[]memory listId){unchecked{
+    function Show(uint batch, uint offset)external view returns
+        (string[]memory tu,uint[]memory price,uint[]memory listId){unchecked{
         /*  Only show the batch number of nfts e.g. 20 per page to prevent overloading
             Usng while loop to get the batch number and break at 0
             Skip listing that no longer have allowance to us    */
@@ -64,4 +60,8 @@ contract agora{
             i--;
         }
     }}
+    function Withdraw()external{
+        require(msg.sender==_owner);
+        payable(msg.sender).transfer(address(this).balance);
+    }
 }
